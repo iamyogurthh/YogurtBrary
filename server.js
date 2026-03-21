@@ -14,6 +14,9 @@ app.use(expressLayouts);
 
 app.use(express.static('public'));
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: false }));
+
 //db connection
 const mongoose = require('mongoose');
 mongoose.connect(process.env.DATABASE_URL);
@@ -25,4 +28,8 @@ db.once('open', () => console.log('Connected to Database'));
 const indexRouter = require('./routes/index');
 app.use('/', indexRouter);
 
+const authorsRouter = require('./routes/authors');
+app.use('/authors', authorsRouter);
+
+//server start on port 3000
 app.listen(process.env.PORT || 3000);

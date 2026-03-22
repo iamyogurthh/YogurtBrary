@@ -31,5 +31,11 @@ app.use('/', indexRouter);
 const authorsRouter = require('./routes/authors');
 app.use('/authors', authorsRouter);
 
+const categoriesRouter = require('./routes/categories');
+app.use('/categories', categoriesRouter);
+
+const booksRouter = require('./routes/books');
+app.use('/books', booksRouter);
+
 //server start on port 3000
 app.listen(process.env.PORT || 3000);

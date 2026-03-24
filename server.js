@@ -2,7 +2,7 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
 
-const express = require('express');
+const express = require('router-plus').express;
 const app = express();
 
 app.set('view engine', 'ejs');
@@ -39,3 +39,5 @@ app.use('/books', booksRouter);
 
 //server start on port 3000
 app.listen(process.env.PORT || 3000);
+
+module.exports = app;

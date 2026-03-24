@@ -1,3 +1,4 @@
 {
-  "cSpell.ignoreWords": ["YogurtBrary"]
+  "cSpell.ignoreWords": ["YogurtBrary"],
+  "postman.settings.dotenv-detection-notification-visibility": false
 }

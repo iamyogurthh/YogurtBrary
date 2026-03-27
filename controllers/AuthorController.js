@@ -4,6 +4,7 @@
  */
 
 const Author = require('../models/author');
+const Book = require('../models/book');
 
 class AuthorController {
   // GET / - Display a listing of the resource
@@ -46,22 +47,56 @@ class AuthorController {
 
   // GET /:id - Display the specified resource
   async show(req, res) {
-    res.send('Show Author ' + req.params.id);
+    try {
+      const author = await Author.findById(req.params.id);
+      const books = await Book.find({ author: author.id }).limit(6).exec();
+      res.render('authors/detail', { author: author, booksByAuthor: books });
+    } catch (error) {
+      res.redirect('/authors');
+    }
   }
 
   // GET /:id/edit - Show form for editing the resource
   async edit(req, res) {
-    res.send('Edit Author ' + req.params.id);
+    await Author.findById(req.params.id)
+      .then((author) => res.render('authors/edit', { author: author }))
+      .catch((error) => res.redirect('/authors'));
   }
 
   // PUT/PATCH /:id - Update the specified resource in storage
   async update(req, res) {
-    res.send('Update Author ' + req.params.id);
+    let author;
+    try {
+      author = await Author.findById(req.params.id);
+      author.name = req.body.name;
+      await author.save();
+      res.redirect(`/authors/${author.id}`);
+    } catch (error) {
+      if (author == null) {
+        res.redirect('/authors');
+      } else {
+        res.render('authors/edit', {
+          author: author,
+          errorMessage: 'Error editing author',
+        });
+      }
+    }
   }
 
   // DELETE /:id - Remove the specified resource from storage
   async destroy(req, res) {
-    res.send('Delete Author ' + req.params.id);
+    let author;
+    try {
+      author = await Author.findById(req.params.id);
+      await author.deleteOne();
+      res.redirect(`/authors`);
+    } catch (error) {
+      if (author == null) {
+        res.redirect('/authors');
+      } else {
+        res.redirect(`/authors/${author.id}`);
+      }
+    }
   }
 }
 

@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const BookController = require('../controllers/indexController');
 const { resource } = require('router-plus');
+const indexController = require('../controllers/indexController');
 
-resource(router, BookController);
+resource(router, indexController);
 
 module.exports = router;

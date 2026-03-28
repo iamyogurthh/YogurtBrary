@@ -7,6 +7,14 @@ const Author = require('../models/author');
 const Category = require('../models/category');
 
 async function renderNewPage(res, book, hasError = false) {
+  renderFormPage(res, book, 'new', hasError);
+}
+
+async function renderEditPage(res, book, hasError = false) {
+  renderFormPage(res, book, 'edit', hasError);
+}
+
+async function renderFormPage(res, book, form, hasError = false) {
   try {
     const authors = await Author.find({});
     const categories = await Category.find({});
@@ -15,8 +23,17 @@ async function renderNewPage(res, book, hasError = false) {
       book: book,
       categories: categories,
     };
-    if (hasError) params.errorMessage = 'Error creating book';
-    res.render('books/new', params);
+
+    if (hasError) {
+      if (form == 'edit') {
+        params.errorMessage = 'Error Updating book';
+      }
+
+      if (form == 'new') {
+        params.errorMessage = 'Error Creating book';
+      }
+    }
+    res.render(`books/${form}`, params);
   } catch (error) {
     res.redirect('/books');
   }
@@ -89,22 +106,67 @@ class BookController {
 
   // GET /:id - Display the specified resource
   async show(req, res) {
-    res.send('BookController Show ID: ' + req.params.id);
+    try {
+      const book = await Book.findById(req.params.id).populate('author').exec();
+      res.render('books/detail', { book: book });
+    } catch (error) {
+      console.log(error);
+      redirect('/books');
+    }
   }
 
   // GET /:id/edit - Show form for editing the resource
   async edit(req, res) {
-    res.send('BookController Edit Form ID: ' + req.params.id);
+    try {
+      const book = await Book.findById(req.params.id);
+      renderEditPage(res, book);
+    } catch (error) {
+      res.redirect('/');
+    }
   }
 
   // PUT/PATCH /:id - Update the specified resource in storage
   async update(req, res) {
-    res.send('BookController Update ID: ' + req.params.id);
+    let book;
+    try {
+      book = await Book.findById(req.params.id);
+      book.title = req.body.title;
+      book.author = req.body.author;
+      book.publishDate = new Date(req.body.publishDate);
+      book.pageCount = req.body.pageCount;
+      book.description = req.body.description;
+      if (req.body.cover != null && req.body.cover != '') {
+        saveCover(book, req.body.cover);
+      }
+      await book.save();
+      res.redirect(`/books/${book.id}`);
+    } catch (error) {
+      if (book != null) {
+        renderEditPage(res, book, true);
+      } else {
+        redirect('/');
+      }
+    }
   }
 
   // DELETE /:id - Remove the specified resource from storage
   async destroy(req, res) {
-    res.send('BookController Destroy ID: ' + req.params.id);
+    let book;
+    try {
+      book = await Book.findById(req.params.id);
+      await book.deleteOne();
+      res.redirect('/books');
+    } catch (error) {
+      console.log(error);
+      if (book != null) {
+        res.render('books/detail', {
+          book: book,
+          errorMessage: 'Could not remove book',
+        });
+      } else {
+        res.redirect('/');
+      }
+    }
   }
 }
 
